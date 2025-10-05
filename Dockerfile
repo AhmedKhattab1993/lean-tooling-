@@ -86,6 +86,8 @@ COPY --from=builder /build/Launcher/ ./Launcher/
 COPY --from=builder /build/ToolBox/ ./ToolBox/
 COPY --from=builder /build/Engine/ ./Engine/
 COPY --from=builder /build/Polygon/ ./Libraries/Polygon/
+# Ensure Polygon data source assemblies are visible to Composer defaults
+COPY --from=builder /build/Polygon/QuantConnect.Lean.DataSource.Polygon.* ./Launcher/
 COPY --from=builder /src/LeanEngine/Algorithm.Python/ ./python-lib/
 COPY --from=builder /src/LeanEngine/Common/AlgorithmImports.py ./python-lib/AlgorithmImports.py
 COPY --from=builder /build/Launcher/QuantConnect.*.dll ./python-lib/
