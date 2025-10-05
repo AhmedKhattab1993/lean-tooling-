@@ -81,6 +81,43 @@ PY
 
 DATA_FOLDER_HOST=$(read_data_folder)
 
+function read_polygon_key() {
+  if [[ -n "${POLYGON_API_KEY:-}" ]]; then
+    echo "${POLYGON_API_KEY}"
+    return
+  fi
+  if [[ ! -f "${LEAN_JSON}" ]]; then
+    echo ""
+    return
+  fi
+  if ! command_exists python3; then
+    echo ""
+    return
+  fi
+  python3 - "${LEAN_JSON}" <<'PY'
+import json, sys
+path = sys.argv[1]
+try:
+    with open(path, 'r') as fh:
+        doc = json.load(fh)
+except Exception:
+    print("")
+else:
+    print(doc.get('polygon-api-key', ""))
+PY
+}
+
+function ensure_polygon_key() {
+  local key
+  if [[ -n "${POLYGON_API_KEY:-}" ]]; then
+    return
+  fi
+  key=$(read_polygon_key)
+  if [[ -n "${key}" ]]; then
+    export POLYGON_API_KEY="${key}"
+  fi
+}
+
 function print_version() {
   local version sha
   version="Lean Tooling CLI"
@@ -150,6 +187,7 @@ function handle_build() {
 function handle_backtest() {
   ensure_prereqs
   ensure_compose_project_root
+  ensure_polygon_key
   local config=""
   local project=""
   local pass_args=()
@@ -206,6 +244,7 @@ function ensure_live_env() {
 function handle_live() {
   ensure_prereqs
   ensure_compose_project_root
+  ensure_polygon_key
   ensure_live_env
   local config=""
   local project=""
@@ -254,6 +293,7 @@ function handle_stop() {
 function handle_download() {
   ensure_prereqs
   ensure_compose_project_root
+  ensure_polygon_key
   if [[ $# -eq 0 ]]; then
     cat <<'DHELP'
 Usage: lean download <ToolBox command> [args...]
