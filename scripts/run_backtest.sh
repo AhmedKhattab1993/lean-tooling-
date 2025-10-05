@@ -14,12 +14,29 @@ REPO_ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 COMPOSE_CMD=${COMPOSE_CMD:-docker compose}
 PROFILE=${COMPOSE_PROFILE:-backtest}
 SERVICE=${COMPOSE_SERVICE:-algorithm-runner}
+BACKTEST_TIMEOUT=${LEAN_BACKTEST_TIMEOUT:-900}
 
-LAUNCHER_ARGS=("--config" "/workspace/lean/${CONFIG_PATH}" "--data-folder" "/lean-data")
+LAUNCHER_ARGS=("--config" "/workspace/lean/${CONFIG_PATH}" "--data-folder" "/lean-data" "--close-automatically" "true")
 
 if [ ${#ADDITIONAL_ARGS[@]} -gt 0 ]; then
   LAUNCHER_ARGS+=("${ADDITIONAL_ARGS[@]}")
 fi
 
+TIMEOUT_BIN=$(command -v timeout || true)
+
+set +e
 set -x
-${COMPOSE_CMD} --profile "${PROFILE}" run --rm "${SERVICE}" "${LAUNCHER_ARGS[@]}"
+if [ -n "${TIMEOUT_BIN}" ] && [ "${BACKTEST_TIMEOUT}" -gt 0 ]; then
+  ${TIMEOUT_BIN} --signal=INT "${BACKTEST_TIMEOUT}" ${COMPOSE_CMD} --profile "${PROFILE}" run --rm "${SERVICE}" "${LAUNCHER_ARGS[@]}"
+  status=$?
+  if [ ${status} -eq 124 ]; then
+    echo "Backtest exceeded ${BACKTEST_TIMEOUT}s and was terminated." >&2
+  fi
+else
+  ${COMPOSE_CMD} --profile "${PROFILE}" run --rm "${SERVICE}" "${LAUNCHER_ARGS[@]}"
+  status=$?
+fi
+set +x
+set -e
+
+exit ${status}
