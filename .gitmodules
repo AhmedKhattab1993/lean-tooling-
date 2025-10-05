@@ -1,0 +1,6 @@
+[submodule "LeanEngine"]
+	path = LeanEngine
+	url = https://github.com/AhmedKhattab1993/Lean.git
+[submodule "LeanDataSource.Polygon"]
+	path = LeanDataSource.Polygon
+	url = https://github.com/AhmedKhattab1993/Lean.DataSource.Polygon.git
