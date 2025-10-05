@@ -25,7 +25,8 @@ RUN dotnet publish Launcher/QuantConnect.Lean.Launcher.csproj \
     /p:UseAppHost=false \
     /p:ErrorOnDuplicatePublishOutputFiles=false \
     /p:DebugType=none \
-    /p:DebugSymbols=false
+    /p:DebugSymbols=false \
+    /p:GenerateDocumentationFile=false
 
 # Publish ToolBox utilities (historical data, etc.)
 RUN dotnet publish ToolBox/QuantConnect.ToolBox.csproj \
@@ -33,7 +34,8 @@ RUN dotnet publish ToolBox/QuantConnect.ToolBox.csproj \
     -o /build/ToolBox \
     /p:UseAppHost=false \
     /p:DebugType=none \
-    /p:DebugSymbols=false
+    /p:DebugSymbols=false \
+    /p:GenerateDocumentationFile=false
 
 # Publish Lean CLI plugin assemblies (algorithm framework, engine)
 RUN dotnet publish Engine/QuantConnect.Lean.Engine.csproj \
@@ -41,7 +43,8 @@ RUN dotnet publish Engine/QuantConnect.Lean.Engine.csproj \
     -o /build/Engine \
     /p:UseAppHost=false \
     /p:DebugType=none \
-    /p:DebugSymbols=false
+    /p:DebugSymbols=false \
+    /p:GenerateDocumentationFile=false
 
 # Build Polygon data source extension
 WORKDIR /src/LeanDataSource.Polygon
@@ -51,7 +54,8 @@ RUN dotnet publish QuantConnect.Polygon/QuantConnect.DataSource.Polygon.csproj \
     -o /build/Polygon \
     /p:UseAppHost=false \
     /p:DebugType=none \
-    /p:DebugSymbols=false
+    /p:DebugSymbols=false \
+    /p:GenerateDocumentationFile=false
 
 # Runtime stage
 FROM mcr.microsoft.com/dotnet/runtime:9.0 AS runtime
