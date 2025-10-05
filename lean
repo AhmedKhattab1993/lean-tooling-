@@ -280,8 +280,21 @@ LHELP
     esac
   done
   local resolved
-  resolved=$(resolve_project_config "${project}" "${config}")
-  ( cd "${PROJECT_ROOT}" && LEAN_DATA_HOST="${DATA_FOLDER_HOST}" "${TOOLING_ROOT}/scripts/run_live.sh" "${resolved}" "${pass_args[@]}" )
+  if [[ -z "${config}" && -n "${project}" ]]; then
+    if [[ -f "${LEAN_DIR}/${project}/config.live.json" ]]; then
+      resolved="${project}/config.live.json"
+    elif [[ -f "${LEAN_DIR}/${project}/live/config.json" ]]; then
+      resolved="${project}/live/config.json"
+    else
+      resolved=$(resolve_project_config "${project}" "${config}")
+    fi
+  else
+    resolved=$(resolve_project_config "${project}" "${config}")
+  fi
+  ( cd "${PROJECT_ROOT}" && \
+    LEAN_DATA_HOST="${DATA_FOLDER_HOST}" \
+    LEAN_DIR_HOST="${LEAN_DIR}" \
+    "${TOOLING_ROOT}/scripts/run_live.sh" "${resolved}" "${pass_args[@]}" )
 }
 
 function handle_stop() {
