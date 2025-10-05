@@ -27,6 +27,7 @@ The repository ships a `lean` CLI that mirrors the most common Lean CLI workflow
 
 # Run a backtest (uses lean/<project>/config.json by default)
 ./lean backtest Nexora -- --start-date 2024-10-01 --end-date 2024-10-02
+# Results land in lean/Nexora/backtests/<UTC timestamp>/
 
 # Launch live trading (ensure POLYGON_API_KEY and brokerage env vars are set)
 ./lean live Nexora
@@ -40,6 +41,8 @@ The repository ships a `lean` CLI that mirrors the most common Lean CLI workflow
 ```
 
 Defaults such as the Lean project directory (`lean/`) and data folder are inferred from `lean/lean.json`. Override paths with environment variables: `LEAN_PROJECT_ROOT`, `LEAN_DIR`, or `LEAN_CONFIG`.
+
+Backtests automatically mimic the upstream Lean CLI layout: each run writes logs, summaries, and artifacts under `lean/<Project>/backtests/<UTC timestamp>/` (or `lean/backtests/<UTC timestamp>/` if the config sits at the root).
 
 ### Environment Variables
 

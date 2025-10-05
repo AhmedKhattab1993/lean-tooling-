@@ -16,7 +16,30 @@ PROFILE=${COMPOSE_PROFILE:-backtest}
 SERVICE=${COMPOSE_SERVICE:-algorithm-runner}
 BACKTEST_TIMEOUT=${LEAN_BACKTEST_TIMEOUT:-900}
 
-LAUNCHER_ARGS=("--config" "/workspace/lean/${CONFIG_PATH}" "--data-folder" "/lean-data" "--close-automatically" "true")
+CONFIG_DIR=$(dirname "${CONFIG_PATH}")
+if [[ "${CONFIG_DIR}" == "." ]]; then
+  CONFIG_DIR=""
+fi
+
+TIMESTAMP=$(date -u +"%Y%m%d_%H-%M-%S")
+RESULTS_RELATIVE="backtests/${TIMESTAMP}"
+
+if [[ -n "${CONFIG_DIR}" ]]; then
+  RESULTS_HOST="${REPO_ROOT}/lean/${CONFIG_DIR}/${RESULTS_RELATIVE}"
+  RESULTS_CONTAINER="/workspace/lean/${CONFIG_DIR}/${RESULTS_RELATIVE}"
+else
+  RESULTS_HOST="${REPO_ROOT}/lean/${RESULTS_RELATIVE}"
+  RESULTS_CONTAINER="/workspace/lean/${RESULTS_RELATIVE}"
+fi
+
+mkdir -p "${RESULTS_HOST}"
+
+LAUNCHER_ARGS=(
+  "--config" "/workspace/lean/${CONFIG_PATH}"
+  "--data-folder" "/lean-data"
+  "--results-destination-folder" "${RESULTS_CONTAINER}"
+  "--close-automatically" "true"
+)
 
 if [ ${#ADDITIONAL_ARGS[@]} -gt 0 ]; then
   LAUNCHER_ARGS+=("${ADDITIONAL_ARGS[@]}")
