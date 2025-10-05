@@ -10,6 +10,31 @@ USAGE
   exit 1
 fi
 
+APP_NAME=$1
+shift || true
+
+PROJECT_ROOT=${LEAN_PROJECT_ROOT:-$(pwd)}
+LEAN_DIR_HOST=${LEAN_DIR_HOST:-"${PROJECT_ROOT}/lean"}
+LEAN_DIR_ABS=$(cd "${LEAN_DIR_HOST}" && pwd)
+LEAN_JSON="${LEAN_DIR_ABS}/lean.json"
+
+if [ -z "${POLYGON_API_KEY:-}" ] && [ -f "${LEAN_JSON}" ]; then
+  if command -v python3 >/dev/null 2>&1; then
+    POLYGON_API_KEY=$(python3 - "${LEAN_JSON}" <<'PY'
+import json, sys
+with open(sys.argv[1], 'r') as handle:
+    doc = json.load(handle)
+print(doc.get('polygon-api-key', ''))
+PY
+)
+    if [ -n "${POLYGON_API_KEY}" ]; then
+      export POLYGON_API_KEY
+    fi
+  fi
+fi
+
+>&2 echo "[lean download] POLYGON_API_KEY=${POLYGON_API_KEY:-<unset>}"
+
 COMPOSE_CMD=${COMPOSE_CMD:-docker compose}
 PROFILE=${COMPOSE_PROFILE:-utility}
 SERVICE=${COMPOSE_SERVICE:-algorithm-runner}
@@ -23,7 +48,13 @@ done
 
 ENTRYPOINT=("--entrypoint" "dotnet")
 COMMAND=("/Lean/ToolBox/QuantConnect.ToolBox.dll")
-COMMAND+=("$@")
+if [ -f "${LEAN_JSON}" ]; then
+  COMMAND+=("--config" "/workspace/lean/lean.json")
+fi
+COMMAND+=("--app=${APP_NAME}")
+if [ "$#" -gt 0 ]; then
+  COMMAND+=("$@")
+fi
 
 set -x
 if [ ${#ENV_FLAGS[@]} -gt 0 ]; then
