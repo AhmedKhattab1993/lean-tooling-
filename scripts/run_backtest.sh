@@ -48,16 +48,21 @@ fi
 
 TIMEOUT_BIN=$(command -v timeout || true)
 
+DETACH_ARGS=()
+if [[ "${LEAN_ATTACH:-0}" != "1" ]]; then
+  DETACH_ARGS+=("--detach")
+fi
+
 set +e
 set -x
 if [ -n "${TIMEOUT_BIN}" ] && [ "${BACKTEST_TIMEOUT}" -gt 0 ]; then
-  ${TIMEOUT_BIN} --signal=INT "${BACKTEST_TIMEOUT}" ${COMPOSE_CMD} --profile "${PROFILE}" run --rm "${SERVICE}" "${LAUNCHER_ARGS[@]}"
+  ${TIMEOUT_BIN} --signal=INT "${BACKTEST_TIMEOUT}" ${COMPOSE_CMD} --profile "${PROFILE}" run --rm ${DETACH_ARGS[@]} "${SERVICE}" "${LAUNCHER_ARGS[@]}"
   status=$?
   if [ ${status} -eq 124 ]; then
     echo "Backtest exceeded ${BACKTEST_TIMEOUT}s and was terminated." >&2
   fi
 else
-  ${COMPOSE_CMD} --profile "${PROFILE}" run --rm "${SERVICE}" "${LAUNCHER_ARGS[@]}"
+  ${COMPOSE_CMD} --profile "${PROFILE}" run --rm ${DETACH_ARGS[@]} "${SERVICE}" "${LAUNCHER_ARGS[@]}"
   status=$?
 fi
 set +x

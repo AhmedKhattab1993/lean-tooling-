@@ -28,6 +28,11 @@ for var in POLYGON_API_KEY IB_USER_NAME IB_ACCOUNT IB_PASSWORD LEAN_LIVE_BROKERA
   fi
 done
 
+DETACH_ARGS=()
+if [[ "${LEAN_ATTACH:-0}" != "1" ]]; then
+  DETACH_ARGS+=("--detach")
+fi
+
 echo "Starting live trading container (profile=${PROFILE})"
 set -x
-${COMPOSE_CMD} --profile "${PROFILE}" run --rm "${ENV_FLAGS[@]}" "${SERVICE}" "${LAUNCHER_ARGS[@]}"
+${COMPOSE_CMD} --profile "${PROFILE}" run --rm ${DETACH_ARGS[@]} "${ENV_FLAGS[@]}" "${SERVICE}" "${LAUNCHER_ARGS[@]}"
