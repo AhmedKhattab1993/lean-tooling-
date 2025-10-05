@@ -186,7 +186,11 @@ BHELP
   done
   local resolved
   resolved=$(resolve_project_config "${project}" "${config}")
-  ( cd "${PROJECT_ROOT}" && LEAN_DATA_HOST="${DATA_FOLDER_HOST}" "${TOOLING_ROOT}/scripts/run_backtest.sh" "${resolved}" "${pass_args[@]}" )
+  ( cd "${PROJECT_ROOT}" && \
+    LEAN_DATA_HOST="${DATA_FOLDER_HOST}" \
+    LEAN_PROJECT_ROOT="${PROJECT_ROOT}" \
+    LEAN_DIR_HOST="${LEAN_DIR}" \
+    "${TOOLING_ROOT}/scripts/run_backtest.sh" "${resolved}" "${pass_args[@]}" )
 }
 
 function ensure_live_env() {

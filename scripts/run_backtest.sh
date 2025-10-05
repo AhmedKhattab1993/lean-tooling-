@@ -16,20 +16,21 @@ PROFILE=${COMPOSE_PROFILE:-backtest}
 SERVICE=${COMPOSE_SERVICE:-algorithm-runner}
 BACKTEST_TIMEOUT=${LEAN_BACKTEST_TIMEOUT:-900}
 
+PROJECT_ROOT=${LEAN_PROJECT_ROOT:-$(pwd)}
+LEAN_DIR_HOST=${LEAN_DIR_HOST:-"${PROJECT_ROOT}/lean"}
+
 CONFIG_DIR=$(dirname "${CONFIG_PATH}")
 if [[ "${CONFIG_DIR}" == "." ]]; then
   CONFIG_DIR=""
 fi
 
 TIMESTAMP=$(date -u +"%Y%m%d_%H-%M-%S")
-RESULTS_RELATIVE="backtests/${TIMESTAMP}"
-
 if [[ -n "${CONFIG_DIR}" ]]; then
-  RESULTS_HOST="${REPO_ROOT}/lean/${CONFIG_DIR}/${RESULTS_RELATIVE}"
-  RESULTS_CONTAINER="/workspace/lean/${CONFIG_DIR}/${RESULTS_RELATIVE}"
+  RESULTS_HOST="${LEAN_DIR_HOST%/}/${CONFIG_DIR}/backtests/${TIMESTAMP}"
+  RESULTS_CONTAINER="/workspace/lean/${CONFIG_DIR}/backtests/${TIMESTAMP}"
 else
-  RESULTS_HOST="${REPO_ROOT}/lean/${RESULTS_RELATIVE}"
-  RESULTS_CONTAINER="/workspace/lean/${RESULTS_RELATIVE}"
+  RESULTS_HOST="${LEAN_DIR_HOST%/}/backtests/${TIMESTAMP}"
+  RESULTS_CONTAINER="/workspace/lean/backtests/${TIMESTAMP}"
 fi
 
 mkdir -p "${RESULTS_HOST}"
