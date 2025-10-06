@@ -10,6 +10,7 @@ WORKDIR /src
 # Copy Lean engine and Polygon data source repositories
 COPY LeanEngine/ ./LeanEngine/
 COPY LeanDataSource.Polygon/ ./LeanDataSource.Polygon/
+COPY LeanBrokerages.InteractiveBrokers/ ./LeanBrokerages.InteractiveBrokers/
 
 # Provide legacy path expected by Polygon solution (../Lean)
 RUN ln -s /src/LeanEngine /src/Lean
@@ -52,6 +53,17 @@ RUN dotnet restore QuantConnect.Polygon.sln
 RUN dotnet publish QuantConnect.Polygon/QuantConnect.DataSource.Polygon.csproj \
     -c ${LEAN_CONFIGURATION} \
     -o /build/Polygon \
+    /p:UseAppHost=false \
+    /p:DebugType=none \
+    /p:DebugSymbols=false \
+    /p:GenerateDocumentationFile=false
+
+# Build Interactive Brokers brokerage extension
+WORKDIR /src/LeanBrokerages.InteractiveBrokers
+RUN dotnet restore QuantConnect.InteractiveBrokersBrokerage.sln
+RUN dotnet publish QuantConnect.InteractiveBrokersBrokerage/QuantConnect.InteractiveBrokersBrokerage.csproj \
+    -c ${LEAN_CONFIGURATION} \
+    -o /build/InteractiveBrokers \
     /p:UseAppHost=false \
     /p:DebugType=none \
     /p:DebugSymbols=false \
@@ -100,6 +112,8 @@ COPY --from=builder /build/Engine/ ./Engine/
 COPY --from=builder /build/Polygon/ ./Libraries/Polygon/
 # Ensure Polygon data source assemblies are visible to Composer defaults
 COPY --from=builder /build/Polygon/QuantConnect.Lean.DataSource.Polygon.* ./Launcher/
+COPY --from=builder /build/InteractiveBrokers/ ./Libraries/Brokerages/InteractiveBrokers/
+COPY --from=builder /build/InteractiveBrokers/QuantConnect.Brokerages.InteractiveBrokers.* ./Launcher/
 COPY --from=builder /src/LeanEngine/Algorithm.Python/ ./python-lib/
 COPY --from=builder /src/LeanEngine/Common/AlgorithmImports.py ./python-lib/AlgorithmImports.py
 COPY --from=builder /build/Launcher/QuantConnect.*.dll ./python-lib/

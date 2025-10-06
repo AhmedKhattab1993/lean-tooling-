@@ -4,3 +4,6 @@
 [submodule "LeanDataSource.Polygon"]
 	path = LeanDataSource.Polygon
 	url = https://github.com/AhmedKhattab1993/Lean.DataSource.Polygon.git
+[submodule "LeanBrokerages.InteractiveBrokers"]
+	path = LeanBrokerages.InteractiveBrokers
+	url = https://github.com/AhmedKhattab1993/Lean.Brokerages.InteractiveBrokers.git
