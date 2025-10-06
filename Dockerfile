@@ -88,6 +88,22 @@ RUN apt-get update \
         python3-pandas \
         libpython3.11 \
         libgdiplus \
+        openjdk-17-jre-headless \
+        procps \
+        xvfb \
+        x11vnc \
+        fluxbox \
+        libxi6 \
+        libxtst6 \
+        libxrender1 \
+        libxrandr2 \
+        libx11-xcb1 \
+        libgtk-3-0 \
+        libglib2.0-0 \
+        libatk1.0-0 \
+        libatk-bridge2.0-0 \
+        libgdk-pixbuf-2.0-0 \
+        libnss3 \
     && ln -sf /usr/lib/x86_64-linux-gnu/libpython3.11.so.1.0 /usr/lib/x86_64-linux-gnu/libpython3.11.so \
     && ldconfig \
     && rm -rf /var/lib/apt/lists/*
@@ -103,7 +119,9 @@ ENV PYTHONNET_PYDLL=/usr/lib/x86_64-linux-gnu/libpython3.11.so \
     LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:${LD_LIBRARY_PATH:-} \
     PYTHONNET_ENABLE_GIL_RELEASE=0 \
     PYTHONNET_RUNTIME=coreclr \
-    PYTHONNET_CORECLR_RUNTIME_CONFIG=/Lean/Launcher/QuantConnect.Lean.Launcher.runtimeconfig.json
+    PYTHONNET_CORECLR_RUNTIME_CONFIG=/Lean/Launcher/QuantConnect.Lean.Launcher.runtimeconfig.json \
+    JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 \
+    PATH=/usr/lib/jvm/java-17-openjdk-amd64/bin:${PATH}
 
 # Copy published artifacts
 COPY --from=builder /build/Launcher/ ./Launcher/

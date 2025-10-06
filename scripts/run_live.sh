@@ -25,6 +25,33 @@ TMP_DIR="${LEAN_DIR_ABS}/.tmp"
 mkdir -p "${TMP_DIR}"
 MERGED_CONFIG_HOST=$(mktemp "${TMP_DIR}/merged-live-config-XXXXXX.json")
 
+normalize_ib_gateway() {
+  local dir="${LEAN_DIR_ABS}/ib-gateway"
+  [[ -d "${dir}" ]] || return
+
+  if [[ ! -f "${dir}/ibgateway" ]]; then
+    local candidate
+    candidate=$(find "${dir}" -maxdepth 1 -type f -name 'ibgateway*' ! -name 'ibgateway*.vmoptions' -print | head -n 1 || true)
+    if [[ -n "${candidate}" ]]; then
+      mv "${candidate}" "${dir}/ibgateway"
+    fi
+  fi
+  chmod +x "${dir}/ibgateway" 2>/dev/null || true
+
+  if [[ ! -f "${dir}/ibgateway.vmoptions" ]]; then
+    local vm
+    vm=$(find "${dir}" -maxdepth 1 -type f -name 'ibgateway*.vmoptions' -print | head -n 1 || true)
+    if [[ -n "${vm}" ]]; then
+      mv "${vm}" "${dir}/ibgateway.vmoptions"
+    fi
+  fi
+
+  find "${dir}" -maxdepth 1 -type f -name 'ibgateway*' ! -name 'ibgateway' ! -name 'ibgateway.vmoptions' -delete || true
+  find "${dir}" -maxdepth 1 -type f -name 'ibgateway*.vmoptions' ! -name 'ibgateway.vmoptions' -delete || true
+}
+
+normalize_ib_gateway
+
 python3 - "$BASE_CONFIG_HOST" "$CONFIG_HOST_PATH" "$MERGED_CONFIG_HOST" <<'PY'
 import json, sys
 base_path, override_path, output_path = sys.argv[1:4]
@@ -49,6 +76,20 @@ with open(output_path, 'w') as handle:
 PY
 
 CONFIG_CONTAINER=${MERGED_CONFIG_HOST/${LEAN_DIR_ABS}/\/workspace\/lean}
+
+PROJECT_SUBDIR=$(dirname "${CONFIG_PATH}")
+if [ "${PROJECT_SUBDIR}" = "." ]; then
+  PROJECT_SUBDIR=""
+fi
+
+if [ -n "${PROJECT_SUBDIR}" ]; then
+  RESULTS_HOST_DIR="${LEAN_DIR_ABS}/${PROJECT_SUBDIR}/live"
+else
+  RESULTS_HOST_DIR="${LEAN_DIR_ABS}/live"
+fi
+
+mkdir -p "${RESULTS_HOST_DIR}"
+RESULTS_CONTAINER=${RESULTS_HOST_DIR/${LEAN_DIR_ABS}/\/workspace\/lean}
 
 ENVIRONMENT_FROM_CONFIG=""
 if [ -n "${CONFIG_HOST_PATH}" ] && command -v python3 >/dev/null 2>&1; then
@@ -75,7 +116,7 @@ for arg in "${ADDITIONAL_ARGS[@]}"; do
   fi
 done
 
-LAUNCHER_ARGS=("--config" "${CONFIG_CONTAINER}" "--data-folder" "/lean-data")
+LAUNCHER_ARGS=("--config" "${CONFIG_CONTAINER}" "--data-folder" "/lean-data" "--results-destination-folder" "${RESULTS_CONTAINER}")
 
 if [ ${env_flag_present} -eq 0 ] && [ -n "${ENVIRONMENT_FROM_CONFIG}" ]; then
   LAUNCHER_ARGS+=("--environment" "${ENVIRONMENT_FROM_CONFIG}")

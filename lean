@@ -140,6 +140,7 @@ Commands:
   backtest         Run a backtest using docker compose runtime
   live             Launch a live trading container
   download         Invoke Lean ToolBox utilities for data downloads
+  ib-gateway       Manage Interactive Brokers Gateway binaries
   stop             Stop the running Lean algorithm container
   ps               Show Lean-related containers
   logs             Tail Lean algorithm logs
@@ -317,6 +318,62 @@ DHELP
   ( cd "${PROJECT_ROOT}" && "${TOOLING_ROOT}/scripts/run_download.sh" "$@" )
 }
 
+function handle_ib_gateway() {
+  ensure_prereqs
+  if [[ $# -eq 0 ]]; then
+    cat <<'IGHELP'
+Usage: lean ib-gateway download [--version <id>] [target_directory]
+Downloads and extracts Interactive Brokers Gateway binaries. Default target is ./lean/ib-gateway.
+Use --version to pick a specific build (e.g., stable, latest, 1019).
+IGHELP
+    exit 1
+  fi
+  case "$1" in
+    download)
+      shift
+      local target="${PROJECT_ROOT}/lean/ib-gateway"
+      local version_override=""
+      while [[ $# -gt 0 ]]; do
+        case "$1" in
+          -v|--version)
+            [[ $# -lt 2 ]] && { echo "--version requires a value" >&2; exit 1; }
+            version_override="$2"; shift 2 ;;
+          --help|-h)
+            cat <<'IGDLH'
+Usage: lean ib-gateway download [--version <id>] [target_directory]
+Downloads Interactive Brokers Gateway binaries. Examples:
+  lean ib-gateway download
+  lean ib-gateway download --version stable
+  lean ib-gateway download --version 1019 ./custom/path
+IGDLH
+            return 0 ;;
+          --)
+            shift
+            if [[ $# -gt 0 ]]; then
+              target="$1"; shift
+            fi
+            break ;;
+          -*)
+            echo "Unknown option: $1" >&2
+            exit 1 ;;
+          *)
+            target="$1"
+            shift ;;
+        esac
+      done
+      mkdir -p "${target}"
+      if [[ -n "${version_override}" ]]; then
+        ( cd "${PROJECT_ROOT}" && IB_GATEWAY_VERSION="${version_override}" "${TOOLING_ROOT}/scripts/download_ib_gateway.sh" "${target}" )
+      else
+        ( cd "${PROJECT_ROOT}" && "${TOOLING_ROOT}/scripts/download_ib_gateway.sh" "${target}" )
+      fi
+      ;;
+    *)
+      echo "Unknown ib-gateway subcommand: $1" >&2
+      exit 1 ;;
+  esac
+}
+
 function handle_ps() {
   ensure_prereqs
   ensure_compose_project_root
@@ -355,6 +412,9 @@ function main() {
     download)
       shift
       handle_download "$@" ;;
+    ib-gateway)
+      shift
+      handle_ib_gateway "$@" ;;
     ps)
       shift
       handle_ps "$@" ;;

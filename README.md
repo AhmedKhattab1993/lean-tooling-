@@ -35,6 +35,9 @@ The repository ships a `lean` CLI that mirrors the most common Lean CLI workflow
 # Download data via ToolBox
 ./lean download PolygonDataDownloader --ticker TSLA --from 2024-10-01 --to 2024-10-02 --resolution Minute
 
+# Bootstrap the Interactive Brokers Gateway binaries (run once per machine)
+./lean ib-gateway download --version stable
+
 # Inspect containers / stop live sessions
 ./lean ps
 ./lean stop
