@@ -82,14 +82,24 @@ if [ "${PROJECT_SUBDIR}" = "." ]; then
   PROJECT_SUBDIR=""
 fi
 
-if [ -n "${PROJECT_SUBDIR}" ]; then
-  RESULTS_HOST_DIR="${LEAN_DIR_ABS}/${PROJECT_SUBDIR}/live"
+if [ -n "${LEAN_RESULTS_DESTINATION:-}" ]; then
+  RESULTS_CONTAINER="${LEAN_RESULTS_DESTINATION}"
+  if [[ "${RESULTS_CONTAINER}" != /workspace/lean/* ]]; then
+    echo "LEAN_RESULTS_DESTINATION must be an absolute container path under /workspace/lean" >&2
+    exit 1
+  fi
+  HOST_PATH="${RESULTS_CONTAINER#/workspace/lean/}"
+  RESULTS_HOST_DIR="${LEAN_DIR_ABS}/${HOST_PATH}"
 else
-  RESULTS_HOST_DIR="${LEAN_DIR_ABS}/live"
+  if [ -n "${PROJECT_SUBDIR}" ]; then
+    RESULTS_HOST_DIR="${LEAN_DIR_ABS}/${PROJECT_SUBDIR}/live"
+  else
+    RESULTS_HOST_DIR="${LEAN_DIR_ABS}/live"
+  fi
+  RESULTS_CONTAINER=${RESULTS_HOST_DIR/${LEAN_DIR_ABS}/\/workspace\/lean}
 fi
 
 mkdir -p "${RESULTS_HOST_DIR}"
-RESULTS_CONTAINER=${RESULTS_HOST_DIR/${LEAN_DIR_ABS}/\/workspace\/lean}
 
 ENVIRONMENT_FROM_CONFIG=""
 if [ -n "${CONFIG_HOST_PATH}" ] && command -v python3 >/dev/null 2>&1; then
