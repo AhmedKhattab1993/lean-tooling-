@@ -29,7 +29,7 @@ The repository ships a `lean` CLI that mirrors the most common Lean CLI workflow
 ./lean backtest Nexora -- --start-date 2024-10-01 --end-date 2024-10-02
 # Results land in lean/Nexora/backtests/<UTC timestamp>/
 
-# Launch live trading (ensure POLYGON_API_KEY and brokerage env vars are set)
+# Launch live trading (requires lean/<project>/config.live.json and live env vars)
 ./lean live Nexora
 
 # Download data via ToolBox
@@ -46,6 +46,8 @@ The repository ships a `lean` CLI that mirrors the most common Lean CLI workflow
 Defaults such as the Lean project directory (`lean/`) and data folder are inferred from `lean/lean.json`. Override paths with environment variables: `LEAN_PROJECT_ROOT`, `LEAN_DIR`, or `LEAN_CONFIG`.
 
 Backtests automatically mimic the upstream Lean CLI layout: each run writes logs, summaries, and artifacts under `lean/<Project>/backtests/<UTC timestamp>/` (or `lean/backtests/<UTC timestamp>/` if the config sits at the root).
+
+Live runs intentionally require `lean/<Project>/config.live.json`; the CLI exits if that file is missing so production deployments never fall back to backtesting settings.
 
 Commands run detached (`docker compose run --detach …`) by default so the CLI prompt returns immediately. Tail progress via `docker logs -f <container>` or the timestamped log file. To force attached execution, export `LEAN_ATTACH=1` before invoking `./lean …`.
 

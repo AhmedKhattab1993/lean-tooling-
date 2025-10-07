@@ -281,14 +281,17 @@ LHELP
     esac
   done
   local resolved
-  if [[ -z "${config}" && -n "${project}" ]]; then
-    if [[ -f "${LEAN_DIR}/${project}/config.live.json" ]]; then
-      resolved="${project}/config.live.json"
-    elif [[ -f "${LEAN_DIR}/${project}/live/config.json" ]]; then
-      resolved="${project}/live/config.json"
-    else
-      resolved=$(resolve_project_config "${project}" "${config}")
+  if [[ -z "${config}" ]]; then
+    if [[ -z "${project}" ]]; then
+      echo "Error: lean live requires either --config or a project with config.live.json" >&2
+      exit 1
     fi
+    local live_default="${project}/config.live.json"
+    if [[ ! -f "${LEAN_DIR}/${live_default}" ]]; then
+      echo "Error: expected ${live_default} under ${LEAN_DIR} for live runs" >&2
+      exit 1
+    fi
+    resolved="${live_default}"
   else
     resolved=$(resolve_project_config "${project}" "${config}")
   fi
