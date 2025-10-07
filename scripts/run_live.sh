@@ -82,6 +82,8 @@ if [ "${PROJECT_SUBDIR}" = "." ]; then
   PROJECT_SUBDIR=""
 fi
 
+TIMESTAMP=$(date -u +"%Y%m%d_%H-%M-%S")
+
 if [ -n "${LEAN_RESULTS_DESTINATION:-}" ]; then
   RESULTS_CONTAINER="${LEAN_RESULTS_DESTINATION}"
   if [[ "${RESULTS_CONTAINER}" != /workspace/lean/* ]]; then
@@ -92,11 +94,12 @@ if [ -n "${LEAN_RESULTS_DESTINATION:-}" ]; then
   RESULTS_HOST_DIR="${LEAN_DIR_ABS}/${HOST_PATH}"
 else
   if [ -n "${PROJECT_SUBDIR}" ]; then
-    RESULTS_HOST_DIR="${LEAN_DIR_ABS}/${PROJECT_SUBDIR}/live"
+    RESULTS_HOST_DIR="${LEAN_DIR_ABS}/${PROJECT_SUBDIR}/live/${TIMESTAMP}"
+    RESULTS_CONTAINER="/workspace/lean/${PROJECT_SUBDIR}/live/${TIMESTAMP}"
   else
-    RESULTS_HOST_DIR="${LEAN_DIR_ABS}/live"
+    RESULTS_HOST_DIR="${LEAN_DIR_ABS}/live/${TIMESTAMP}"
+    RESULTS_CONTAINER="/workspace/lean/live/${TIMESTAMP}"
   fi
-  RESULTS_CONTAINER=${RESULTS_HOST_DIR/${LEAN_DIR_ABS}/\/workspace\/lean}
 fi
 
 mkdir -p "${RESULTS_HOST_DIR}"

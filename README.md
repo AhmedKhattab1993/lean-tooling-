@@ -47,7 +47,7 @@ Defaults such as the Lean project directory (`lean/`) and data folder are inferr
 
 Backtests automatically mimic the upstream Lean CLI layout: each run writes logs, summaries, and artifacts under `lean/<Project>/backtests/<UTC timestamp>/` (or `lean/backtests/<UTC timestamp>/` if the config sits at the root).
 
-Live runs intentionally require `lean/<Project>/config.live.json`; the CLI exits if that file is missing so production deployments never fall back to backtesting settings.
+Live runs intentionally require `lean/<Project>/config.live.json`; the CLI exits if that file is missing so production deployments never fall back to backtesting settings. When no custom destination is supplied, results are written to `lean/<Project>/live/<UTC timestamp>/`.
 
 Commands run detached (`docker compose run --detach …`) by default so the CLI prompt returns immediately. Tail progress via `docker logs -f <container>` or the timestamped log file. To force attached execution, export `LEAN_ATTACH=1` before invoking `./lean …`.
 
