@@ -108,7 +108,7 @@ PY
 
 CONFIG_CONTAINER=${MERGED_CONFIG_HOST/${LEAN_DIR_ABS}/\/workspace\/lean}
 
-TIMESTAMP=$(date -u +"%Y%m%d_%H-%M-%S")
+TIMESTAMP=$(date -u +"%Y-%m-%d_%H-%M-%S")
 if [[ -n "${CONFIG_DIR}" ]]; then
   RESULTS_HOST="${LEAN_DIR_ABS%/}/${CONFIG_DIR}/backtests/${TIMESTAMP}"
   RESULTS_CONTAINER="/workspace/lean/${CONFIG_DIR}/backtests/${TIMESTAMP}"
